@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3 uid="uid://c4ev7hfnf378r"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_7dexn"]
+albedo_color = Color(0, 0, 1, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_jipld"]
+material = SubResource("StandardMaterial3D_7dexn")
+size = Vector3(0.1, 0.1, 0.1)
+
+[node name="Food" type="Node3D"]
+
+[node name="FoodMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.01, 0, 0, 0, 0.01, 0, 0, 0, 0.01, 0, 0, 0)
+mesh = SubResource("BoxMesh_jipld")

@@ -1,0 +1,26 @@
+[gd_scene load_steps=5 format=3 uid="uid://csxo846kvd2n1"]
+
+[ext_resource type="ArrayMesh" uid="uid://c8kux7ua4jl46" path="res://meshes/cone.obj" id="1_ktiol"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_2kebb"]
+albedo_color = Color(0, 1, 0, 1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_xmbop"]
+material = SubResource("StandardMaterial3D_2kebb")
+radius = 0.01
+height = 0.02
+radial_segments = 16
+rings = 10
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ipwyq"]
+albedo_color = Color(0, 1, 0, 1)
+
+[node name="Fish" type="Node3D"]
+
+[node name="Sphere" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_xmbop")
+
+[node name="Cone" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.01, 0, 0, 0, 0.01, 0, 0, 0, 0.01, 0, 0, 0)
+mesh = ExtResource("1_ktiol")
+surface_material_override/0 = SubResource("StandardMaterial3D_ipwyq")

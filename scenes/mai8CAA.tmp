@@ -1,0 +1,84 @@
+[gd_scene load_steps=3 format=3 uid="uid://b247mw8rkipt7"]
+
+[ext_resource type="Script" path="res://scripts/fishtank.gd" id="1_ogwe8"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_2ww4b"]
+size = Vector3(1, 0.5, 0.25)
+
+[node name="Main" type="Node3D"]
+
+[node name="Tank" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_2ww4b")
+script = ExtResource("1_ogwe8")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.527814)
+
+[node name="UserInterface" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="FileInput" type="HBoxContainer" parent="UserInterface"]
+layout_direction = 2
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_top = -37.0
+offset_right = 378.0
+grow_vertical = 0
+
+[node name="SelectedFile" type="Label" parent="UserInterface/FileInput"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Sample File Name"
+
+[node name="OpenFile" type="Button" parent="UserInterface/FileInput"]
+layout_mode = 2
+text = "Open File"
+
+[node name="LoadFile" type="Button" parent="UserInterface/FileInput"]
+layout_mode = 2
+text = "Load File"
+
+[node name="FileDialog" type="FileDialog" parent="UserInterface"]
+title = "Open a File"
+initial_position = 1
+size = Vector2i(392, 400)
+ok_button_text = "Open"
+file_mode = 0
+access = 2
+filters = PackedStringArray("*.out")
+
+[node name="LoadingContainer" type="VBoxContainer" parent="UserInterface"]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -80.0
+offset_top = -40.0
+offset_right = 80.0
+offset_bottom = 40.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label" type="Label" parent="UserInterface/LoadingContainer"]
+layout_mode = 2
+text = "Loading File"
+horizontal_alignment = 1
+
+[node name="ProgressBar" type="ProgressBar" parent="UserInterface/LoadingContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 8
+
+[connection signal="pressed" from="UserInterface/FileInput/OpenFile" to="Tank" method="_on_open_file_pressed"]
+[connection signal="pressed" from="UserInterface/FileInput/LoadFile" to="Tank" method="_on_load_file_pressed"]
+[connection signal="file_selected" from="UserInterface/FileDialog" to="Tank" method="_on_file_dialog_file_selected"]

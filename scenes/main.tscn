@@ -1,0 +1,360 @@
+[gd_scene load_steps=15 format=3 uid="uid://b247mw8rkipt7"]
+
+[ext_resource type="Script" path="res://scripts/fishtank.gd" id="1_ogwe8"]
+[ext_resource type="PackedScene" uid="uid://csxo846kvd2n1" path="res://scenes/fish.tscn" id="2_h57mf"]
+[ext_resource type="PackedScene" uid="uid://c4ev7hfnf378r" path="res://scenes/food.tscn" id="3_asu47"]
+[ext_resource type="Texture2D" uid="uid://cwqtf4miuexdf" path="res://textures/pausebutton.png" id="4_8nmy4"]
+[ext_resource type="Texture2D" uid="uid://dsmmq4yixuvvp" path="res://textures/playbutton.png" id="5_dn68d"]
+[ext_resource type="Texture2D" uid="uid://cyv4cb2kjbog0" path="res://textures/first.png" id="6_j54lq"]
+[ext_resource type="Texture2D" uid="uid://c7ewrs6825glw" path="res://textures/stepbackwards.png" id="7_m5pwy"]
+[ext_resource type="Texture2D" uid="uid://0j5wab7p0k5i" path="res://textures/stepforward.png" id="8_73o3w"]
+[ext_resource type="Texture2D" uid="uid://cb3pk30ojk51y" path="res://textures/last.png" id="9_7idb8"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_n8dwy"]
+transparency = 2
+alpha_scissor_threshold = 0.5
+alpha_antialiasing_mode = 0
+albedo_color = Color(1, 1, 1, 0)
+
+[sub_resource type="BoxMesh" id="BoxMesh_2ww4b"]
+material = SubResource("StandardMaterial3D_n8dwy")
+size = Vector3(1, 0.5, 0.25)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_u6uso"]
+bg_color = Color(0.6, 0.6, 0.6, 0.482353)
+corner_radius_top_left = 25
+corner_radius_top_right = 25
+corner_radius_bottom_right = 25
+corner_radius_bottom_left = 25
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_injro"]
+radius = 0.01
+height = 1.0
+
+[sub_resource type="SphereMesh" id="SphereMesh_0fwdd"]
+radius = 0.01
+height = 0.02
+
+[node name="Main" type="Node3D"]
+
+[node name="Tank" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_2ww4b")
+script = ExtResource("1_ogwe8")
+fish = ExtResource("2_h57mf")
+food = ExtResource("3_asu47")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0.89)
+fov = 60.0
+near = 0.75
+far = 2.5
+
+[node name="UserInterface" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="FileInput" type="HBoxContainer" parent="UserInterface"]
+layout_direction = 2
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_top = -37.0
+offset_right = 378.0
+grow_vertical = 0
+
+[node name="SelectedFile" type="Label" parent="UserInterface/FileInput"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Sample File Name"
+
+[node name="OpenFile" type="Button" parent="UserInterface/FileInput"]
+layout_mode = 2
+text = "Open File"
+
+[node name="LoadFile" type="Button" parent="UserInterface/FileInput"]
+layout_mode = 2
+text = "Load File"
+
+[node name="FileDialog" type="FileDialog" parent="UserInterface"]
+title = "Open a File"
+initial_position = 1
+size = Vector2i(392, 400)
+ok_button_text = "Open"
+file_mode = 0
+access = 2
+filters = PackedStringArray("*.out")
+
+[node name="LoadingBackground" type="ColorRect" parent="UserInterface"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.364706)
+
+[node name="LoadingContainer" type="VBoxContainer" parent="UserInterface/LoadingBackground"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -80.0
+offset_top = -40.0
+offset_right = 80.0
+offset_bottom = 40.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label" type="Label" parent="UserInterface/LoadingBackground/LoadingContainer"]
+layout_mode = 2
+text = "Loading File"
+horizontal_alignment = 1
+
+[node name="ProgressBar" type="ProgressBar" parent="UserInterface/LoadingBackground/LoadingContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 8
+
+[node name="ErrorDialog" type="AcceptDialog" parent="UserInterface"]
+title = "Error"
+initial_position = 1
+dialog_text = "Error Text"
+
+[node name="Timeline" type="Panel" parent="UserInterface"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -293.0
+offset_top = -143.0
+offset_right = 293.0
+offset_bottom = -54.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_u6uso")
+
+[node name="PauseButton" type="TextureButton" parent="UserInterface/Timeline"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -25.0
+offset_top = 5.0
+offset_right = 25.0
+offset_bottom = 55.0
+grow_horizontal = 2
+scale = Vector2(0.9, 0.9)
+toggle_mode = true
+texture_normal = ExtResource("4_8nmy4")
+texture_pressed = ExtResource("5_dn68d")
+
+[node name="SkipFirst" type="TextureButton" parent="UserInterface/Timeline/PauseButton"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -175.0
+offset_top = -25.0
+offset_right = -125.0
+offset_bottom = 25.0
+grow_horizontal = 2
+grow_vertical = 2
+texture_normal = ExtResource("6_j54lq")
+
+[node name="StepBack" type="TextureButton" parent="UserInterface/Timeline/PauseButton"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -100.0
+offset_top = -25.0
+offset_right = -50.0
+offset_bottom = 25.0
+grow_horizontal = 2
+grow_vertical = 2
+texture_normal = ExtResource("7_m5pwy")
+
+[node name="StepForward" type="TextureButton" parent="UserInterface/Timeline/PauseButton"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 50.0
+offset_top = -25.0
+offset_right = 100.0
+offset_bottom = 25.0
+grow_horizontal = 2
+grow_vertical = 2
+texture_normal = ExtResource("8_73o3w")
+
+[node name="SkipLast" type="TextureButton" parent="UserInterface/Timeline/PauseButton"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 125.0
+offset_top = -25.0
+offset_right = 175.0
+offset_bottom = 25.0
+grow_horizontal = 2
+grow_vertical = 2
+texture_normal = ExtResource("9_7idb8")
+
+[node name="TimelineContainer" type="HBoxContainer" parent="UserInterface/Timeline"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -52.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/separation = 7
+alignment = 1
+
+[node name="LeftBuffer" type="Label" parent="UserInterface/Timeline/TimelineContainer"]
+layout_mode = 2
+text = "   "
+lines_skipped = 1
+
+[node name="CurrentTime" type="Label" parent="UserInterface/Timeline/TimelineContainer"]
+layout_mode = 2
+text = "0.0 Sec
+Frame 000"
+
+[node name="Slider" type="HSlider" parent="UserInterface/Timeline/TimelineContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+min_value = 1.0
+value = 1.0
+rounded = true
+tick_count = 10
+ticks_on_borders = true
+
+[node name="TotalTime" type="Label" parent="UserInterface/Timeline/TimelineContainer"]
+layout_mode = 2
+text = "10.0 Sec
+300 Frames"
+
+[node name="RightBuffer" type="Label" parent="UserInterface/Timeline/TimelineContainer"]
+layout_mode = 2
+text = "   "
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.125524, 0.992091, 0, -0.992091, 0.125524, 0, 3.10271, 0)
+
+[node name="DirectionalLight3D2" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.915361, -0.402635, 0, 0.402635, 0.915361, 0, -1.51525, 3.56361)
+
+[node name="FishtankMesh" type="Node3D" parent="."]
+
+[node name="WallTop1" type="MeshInstance3D" parent="FishtankMesh"]
+transform = Transform3D(-4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0, 1, 0, 0.25, 0.125)
+mesh = SubResource("CapsuleMesh_injro")
+
+[node name="WallTop2" type="MeshInstance3D" parent="FishtankMesh"]
+transform = Transform3D(-4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0, 1, 0, 0.25, -0.125)
+mesh = SubResource("CapsuleMesh_injro")
+skeleton = NodePath("../WallTop1")
+
+[node name="WallTop3" type="MeshInstance3D" parent="FishtankMesh"]
+transform = Transform3D(1, 0, 0, 0, -1.09278e-08, -1, 0, 0.25, -4.37114e-08, 0.5, 0.25, 0)
+mesh = SubResource("CapsuleMesh_injro")
+
+[node name="WallTop4" type="MeshInstance3D" parent="FishtankMesh"]
+transform = Transform3D(1, 0, 0, 0, -1.09278e-08, -1, 0, 0.25, -4.37114e-08, -0.5, 0.25, 0)
+mesh = SubResource("CapsuleMesh_injro")
+
+[node name="WallBottom1" type="MeshInstance3D" parent="FishtankMesh"]
+transform = Transform3D(-4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0, 1, 0, -0.25, 0.125)
+mesh = SubResource("CapsuleMesh_injro")
+
+[node name="WallBottom2" type="MeshInstance3D" parent="FishtankMesh"]
+transform = Transform3D(-4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0, 1, 0, -0.25, -0.125)
+mesh = SubResource("CapsuleMesh_injro")
+skeleton = NodePath("../WallTop1")
+
+[node name="WallBottom3" type="MeshInstance3D" parent="FishtankMesh"]
+transform = Transform3D(1, 0, 0, 0, -1.09278e-08, -1, 0, 0.25, -4.37114e-08, 0.5, -0.25, 0)
+mesh = SubResource("CapsuleMesh_injro")
+
+[node name="WallBottom4" type="MeshInstance3D" parent="FishtankMesh"]
+transform = Transform3D(1, 0, 0, 0, -1.09278e-08, -1, 0, 0.25, -4.37114e-08, -0.5, -0.25, 0)
+mesh = SubResource("CapsuleMesh_injro")
+
+[node name="WallSide1" type="MeshInstance3D" parent="FishtankMesh"]
+transform = Transform3D(1, 0, 0, 0, 0.5, 0, 0, 0, 1, 0.5, 0, 0.125)
+mesh = SubResource("CapsuleMesh_injro")
+
+[node name="WallSide2" type="MeshInstance3D" parent="FishtankMesh"]
+transform = Transform3D(1, 0, 0, 0, 0.5, 0, 0, 0, 1, 0.5, 0, -0.125)
+mesh = SubResource("CapsuleMesh_injro")
+
+[node name="WallSide3" type="MeshInstance3D" parent="FishtankMesh"]
+transform = Transform3D(1, 0, 0, 0, 0.5, 0, 0, 0, 1, -0.5, 0, 0.125)
+mesh = SubResource("CapsuleMesh_injro")
+
+[node name="WallSide4" type="MeshInstance3D" parent="FishtankMesh"]
+transform = Transform3D(1, 0, 0, 0, 0.5, 0, 0, 0, 1, -0.5, 0, -0.125)
+mesh = SubResource("CapsuleMesh_injro")
+
+[node name="Corner1" type="MeshInstance3D" parent="FishtankMesh"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 0.25, 0.125)
+mesh = SubResource("SphereMesh_0fwdd")
+
+[node name="Corner2" type="MeshInstance3D" parent="FishtankMesh"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.5, 0.25, 0.125)
+mesh = SubResource("SphereMesh_0fwdd")
+
+[node name="Corner3" type="MeshInstance3D" parent="FishtankMesh"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, -0.25, 0.125)
+mesh = SubResource("SphereMesh_0fwdd")
+
+[node name="Corner4" type="MeshInstance3D" parent="FishtankMesh"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.5, -0.25, 0.125)
+mesh = SubResource("SphereMesh_0fwdd")
+
+[node name="Corner5" type="MeshInstance3D" parent="FishtankMesh"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 0.25, -0.125)
+mesh = SubResource("SphereMesh_0fwdd")
+
+[node name="Corner6" type="MeshInstance3D" parent="FishtankMesh"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.5, 0.25, -0.125)
+mesh = SubResource("SphereMesh_0fwdd")
+
+[node name="Corner7" type="MeshInstance3D" parent="FishtankMesh"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, -0.25, -0.125)
+mesh = SubResource("SphereMesh_0fwdd")
+
+[node name="Corner8" type="MeshInstance3D" parent="FishtankMesh"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.5, -0.25, -0.125)
+mesh = SubResource("SphereMesh_0fwdd")
+
+[connection signal="pressed" from="UserInterface/FileInput/OpenFile" to="Tank" method="_on_open_file_pressed"]
+[connection signal="pressed" from="UserInterface/FileInput/LoadFile" to="Tank" method="_on_load_file_pressed"]
+[connection signal="file_selected" from="UserInterface/FileDialog" to="Tank" method="_on_file_dialog_file_selected"]
+[connection signal="toggled" from="UserInterface/Timeline/PauseButton" to="Tank" method="_on_pause_button_toggled"]
+[connection signal="pressed" from="UserInterface/Timeline/PauseButton/SkipFirst" to="Tank" method="_on_skip_first_pressed"]
+[connection signal="pressed" from="UserInterface/Timeline/PauseButton/StepBack" to="Tank" method="_on_step_back_pressed"]
+[connection signal="pressed" from="UserInterface/Timeline/PauseButton/StepForward" to="Tank" method="_on_step_forward_pressed"]
+[connection signal="pressed" from="UserInterface/Timeline/PauseButton/SkipLast" to="Tank" method="_on_skip_last_pressed"]
+[connection signal="value_changed" from="UserInterface/Timeline/TimelineContainer/Slider" to="Tank" method="_on_slider_value_changed"]
