@@ -91,6 +91,8 @@ func _on_load_file_pressed():
 			pass
 		else:
 			_setup_timeline()
+			_current_frame = 1
+			_current_time = 0
 
 
 func _setup_timeline():
@@ -147,6 +149,10 @@ func _show_food(frame):
 # Does all the actual loading in a thread so the loading bar can be updated
 # returns an array of the form [Error, err_string]
 func _load_file_threadwork(file) -> Array:
+	# Clear out arrays incase fish already exist (reloading file)
+	_fish = [[]]
+	_food = [[]]
+	# open file
 	var f = FileAccess.open(file, FileAccess.READ)
 	# first line of file is the number of frames
 	var nframes = f.get_line().to_int()
