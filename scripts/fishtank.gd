@@ -49,6 +49,7 @@ func _ready():
 func _process(delta):
 	if _has_fish:
 		_clean_tank()
+#		print("Fish: ", _fish[_current_frame].size(), "  Food: ", _food[_current_frame].size())
 		_show_fish(_current_frame)
 		_show_food(_current_frame)
 		_update_timeline(_current_frame)
@@ -142,6 +143,7 @@ func _show_food(frame):
 		# Spawn instance of food
 		var food_inst = food.instantiate()
 		# Move to position
+#		print("Pos: ", f.position.x, ",", f.position.y, ",", f.position.z)
 		food_inst.set_position(f.position)
 		add_child(food_inst)
 
