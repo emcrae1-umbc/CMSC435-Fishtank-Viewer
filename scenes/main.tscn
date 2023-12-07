@@ -78,7 +78,7 @@ text = "Open File"
 
 [node name="LoadFile" type="Button" parent="UserInterface/FileInput"]
 layout_mode = 2
-text = "Load File"
+text = "Reload"
 
 [node name="FileDialog" type="FileDialog" parent="UserInterface"]
 title = "Open a File"

@@ -71,29 +71,15 @@ func _on_open_file_pressed():
 func _on_file_dialog_file_selected(path):
 	_text_file.set_text(path)
 	_file_dialog.hide()
-	_tank_paused = false
+	_load_file(path)
+#	_tank_paused = false
+	_pause_button.set_pressed(false)
 
 
 # Load File button pressed
 func _on_load_file_pressed():
-	# TODO: error handling for each line grab and regex parsing
 	if not _text_file.get_text().is_empty():
-		print("Loading ", _text_file.get_text())
-		var thread := Thread.new()
-		var err = thread.start(_load_file_threadwork.bind(_text_file.get_text()))
-		if err:
-			push_error("Couldn't start file loading thread. Error code = %d" % [ err ])
-			return
-#		var _error = await self.file_load_finished
-		var _error = thread.wait_to_finish()
-		if _error[0]:
-			_error_box.set_text(_error[1] + "\nError Code = " + str(_error[0]))
-			_error_box.show()
-			pass
-		else:
-			_setup_timeline()
-			_current_frame = 1
-			_current_time = 0
+		_load_file(_text_file.get_text())
 
 
 func _setup_timeline():
@@ -146,6 +132,25 @@ func _show_food(frame):
 #		print("Pos: ", f.position.x, ",", f.position.y, ",", f.position.z)
 		food_inst.set_position(f.position)
 		add_child(food_inst)
+
+
+func _load_file(file):
+	print("Loading ", file)
+	var thread := Thread.new()
+	var err = thread.start(_load_file_threadwork.bind(file))
+	if err:
+		push_error("Couldn't start file loading thread. Error code = %d" % [ err ])
+		return
+#		var _error = await self.file_load_finished
+	var _error = thread.wait_to_finish()
+	if _error[0]:
+		_error_box.set_text(_error[1] + "\nError Code = " + str(_error[0]))
+		_error_box.show()
+		pass
+	else:
+		_setup_timeline()
+		_current_frame = 1
+		_current_time = 0
 
 
 # Does all the actual loading in a thread so the loading bar can be updated
