@@ -20,10 +20,14 @@ var _food = [[]]
 # Runtime variables
 var _tank_paused = true
 var _has_fish = false
+var _loading = false
+var _load_percentage = 0.0
 var _current_time: float = 0.0
 var _current_frame: int = 0
 var _total_time: float = 0.0
 var _total_frames: int = 0
+var _load_mutex = Mutex.new()
+var _thread = Thread.new()
 
 
 # Called when the node enters the scene tree for the first time.
@@ -47,6 +51,10 @@ func _ready():
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 # delta is in seconds
 func _process(delta):
+	if _loading:
+		_load_mutex.lock()
+		_loading_bar.set_value(_load_percentage)
+		_load_mutex.unlock()
 	if _has_fish:
 		_clean_tank()
 #		print("Fish: ", _fish[_current_frame].size(), "  Food: ", _food[_current_frame].size())
@@ -63,7 +71,8 @@ func _process(delta):
 
 # Open File button pressed
 func _on_open_file_pressed():
-	_tank_paused = true
+#	_tank_paused = true
+	_pause_button.set_pressed(false)
 	_file_dialog.show()
 
 
@@ -80,6 +89,12 @@ func _on_file_dialog_file_selected(path):
 func _on_load_file_pressed():
 	if not _text_file.get_text().is_empty():
 		_load_file(_text_file.get_text())
+
+
+# Pressing cancel on the file dialog
+func _on_file_dialog_canceled():
+#	_tank_paused = false
+	_pause_button.set_pressed(true)
 
 
 func _setup_timeline():
@@ -134,39 +149,47 @@ func _show_food(frame):
 		add_child(food_inst)
 
 
+func _reset_tank():
+	_current_time = 0.0
+	_current_frame = 0
+	_total_time = 0.0
+	_total_frames = 0
+	_has_fish = false
+	_clean_tank()
+	_fish = [[]]
+	_food = [[]]
+	_tank_paused = true
+	_setup_timeline()
+	_update_timeline(_current_frame)
+
+
 func _load_file(file):
 	print("Loading ", file)
-	var thread := Thread.new()
-	var err = thread.start(_load_file_threadwork.bind(file))
+	# Clear out arrays incase fish already exist (reloading file)
+	_reset_tank()
+	_pause_button.set_pressed(false)
+	_loading = true
+	_loading_bar.set_max(100)
+	_loading_bar.set_value(0)
+	_loading_container.show()
+	var err = _thread.start(_load_file_threadwork.bind(file))
 	if err:
 		push_error("Couldn't start file loading thread. Error code = %d" % [ err ])
 		return
 #		var _error = await self.file_load_finished
-	var _error = thread.wait_to_finish()
-	if _error[0]:
-		_error_box.set_text(_error[1] + "\nError Code = " + str(_error[0]))
-		_error_box.show()
-		pass
-	else:
-		_setup_timeline()
-		_current_frame = 1
-		_current_time = 0
 
 
 # Does all the actual loading in a thread so the loading bar can be updated
 # returns an array of the form [Error, err_string]
 func _load_file_threadwork(file) -> Array:
-	# Clear out arrays incase fish already exist (reloading file)
-	_fish = [[]]
-	_food = [[]]
+	var ecode = [OK, "OK"]
 	# open file
 	var f = FileAccess.open(file, FileAccess.READ)
 	# first line of file is the number of frames
 	var nframes = f.get_line().to_int()
 	_total_frames = nframes
-	# set loading bar info
-	call_deferred("_setup_load_progress", nframes)
 	for frame in range(nframes):
+#		print("Frame ", frame, "/", nframes)
 		var fish_array = []
 		var food_array = []
 		if f.eof_reached():
@@ -184,7 +207,8 @@ func _load_file_threadwork(file) -> Array:
 			if f.eof_reached():
 				# show error message here
 				var err_str = "Only able read in " + str(i) + " of " + str(num_fish) + " fish for frame " + str(frame) + "."
-				return [ERR_FILE_EOF, err_str]
+				ecode = [ERR_FILE_EOF, err_str]
+				break
 			# Tried using regex to test for correctness as well, but was too complicated to be able 
 			# to match all forms of decimal numbers and exponentials
 			var fish_str = fish_string.replace("[", " ")
@@ -194,63 +218,75 @@ func _load_file_threadwork(file) -> Array:
 			# Do the error checking here, should be 6 floats
 			if fish_arr.size() != 6:
 				var err_str = "Invalid input: Fish " + str(i) + " in frame " + str(frame) + ": " + fish_string
-				return [ERR_INVALID_DATA, err_str]
+				ecode = [ERR_INVALID_DATA, err_str]
+				break
 			var new_fish = Fish.new()
 			new_fish.position = Vector3(fish_arr[0], fish_arr[1], fish_arr[2])
 			new_fish.velocity = Vector3(fish_arr[3], fish_arr[4], fish_arr[5])
 			fish_array.push_back(new_fish)
+		if ecode[0] != OK:
+			break
 		var num_food = f.get_line().to_int()
 		for i in range(num_food):
 			var food_string = f.get_line()
 			if f.eof_reached():
 				# show error message here
 				var err_str = "Only able read in " + str(i) + " of " + str(num_food) + " food for frame " + str(frame) + "."
-				return [ERR_FILE_EOF, err_str]
+				ecode = [ERR_FILE_EOF, err_str]
+				break
 			var food_str = food_string.replace("[", " ")
 			food_str = food_str.replace("]", " ")
 			food_str = food_str.replace(",", " ")
 			var food_arr = food_str.split_floats(" ", false)
 			if food_arr.size() != 3:
 				var err_str = "Invalid input: Food " + str(i) + " in frame " + str(frame) + ": " + food_string
-				return [ERR_INVALID_DATA, err_str]
+				ecode = [ERR_INVALID_DATA, err_str]
+				break
 			var new_food = Food.new()
 			new_food.position = Vector3(food_arr[0], food_arr[1], food_arr[2])
 			food_array.push_back(new_food)
+		if ecode[0] != OK:
+			break
 		_fish.push_back(fish_array)
 		_food.push_back(food_array)
-#		await get_tree().create_timer(0.1).timeout
-		call_deferred("_file_load_progress_changed", frame)
-#		emit_signal("file_load_progress_changed", frame)
-#	emit_signal("file_load_finished", OK)
-	call_deferred("_finish_load_progress")
-	print("load done")
-	return [OK, "OK"]
+#		var timer = get_tree().create_timer(0.01)
+#		while(timer.time_left > 1.0e-8):
+#			continue
+		_load_mutex.lock()
+		_load_percentage = 100 * (frame / float(nframes))
+		_load_mutex.unlock()
+	call_deferred("_finish_load")
+	return ecode
 
 
-func _setup_load_progress(num_frames):
-	_loading_bar.set_max(num_frames)
-	_total_time = num_frames * (1.0 / fps)
-	_loading_bar.set_value(0)
-	_loading_container.show()
-
-
-func _file_load_progress_changed(progress):
-	_loading_bar.set_value(progress)
-
-
-func _finish_load_progress():
-	_loading_container.hide()
-	_tank_paused = false
-	_has_fish = true
+func _finish_load():
+	var _error = _thread.wait_to_finish()
+	if _error[0]:
+		_error_box.set_text(_error[1] + "\nError Code = " + str(_error[0]))
+		_error_box.show()
+		_reset_tank()
+		pass
+	else:
+		_setup_timeline()
+		_current_frame = 1
+		_current_time = 0
+		_loading_container.hide()
+		_tank_paused = false
+		_has_fish = true
+		_pause_button.set_pressed(true)
+		_loading = false
 
 
 func _pause_tank():
-	_tank_paused = true
-	_pause_button.set_pressed(true)
+	_pause_button.set_pressed(false)
 
 
 func _on_pause_button_toggled(button_pressed):
-	_tank_paused = button_pressed
+	if(_has_fish):
+		print("Play status: ", button_pressed)
+		_tank_paused = not button_pressed
+	else:
+		_pause_button.set_pressed_no_signal(false)
 
 
 func _on_slider_value_changed(value):
@@ -283,6 +319,15 @@ func _on_step_forward_pressed():
 		_current_frame += 1
 		_current_time += 1.0 / fps
 		_pause_tank()
+
+
+# Do the same for both hitting OK and the close button
+func _on_error_dialog_confirmed():
+	_loading_container.hide()
+
+
+func _on_error_dialog_canceled():
+	_loading_container.hide()
 
 
 class Fish:
