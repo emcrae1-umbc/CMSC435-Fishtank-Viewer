@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3 uid="uid://b247mw8rkipt7"]
+[gd_scene load_steps=16 format=3 uid="uid://b247mw8rkipt7"]
 
 [ext_resource type="Script" path="res://scripts/fishtank.gd" id="1_ogwe8"]
 [ext_resource type="PackedScene" uid="uid://csxo846kvd2n1" path="res://scenes/fish.tscn" id="2_h57mf"]
@@ -9,6 +9,7 @@
 [ext_resource type="Texture2D" uid="uid://c7ewrs6825glw" path="res://textures/stepbackwards.png" id="7_m5pwy"]
 [ext_resource type="Texture2D" uid="uid://0j5wab7p0k5i" path="res://textures/stepforward.png" id="8_73o3w"]
 [ext_resource type="Texture2D" uid="uid://cb3pk30ojk51y" path="res://textures/last.png" id="9_7idb8"]
+[ext_resource type="Script" path="res://scenes/settings.gd" id="10_20pfy"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_n8dwy"]
 transparency = 2
@@ -259,6 +260,34 @@ text = "10.0 Sec
 layout_mode = 2
 text = "   "
 
+[node name="SettingsButton" type="MenuButton" parent="UserInterface" node_paths=PackedStringArray("fishtank", "fps_box")]
+layout_mode = 0
+offset_right = 57.0
+offset_bottom = 23.0
+action_mode = 1
+text = "Settings"
+item_count = 1
+popup/item_0/text = "FPS"
+popup/item_0/id = 0
+script = ExtResource("10_20pfy")
+fishtank = NodePath("../../Tank")
+fps_box = NodePath("../FpsBox")
+
+[node name="FpsBox" type="ConfirmationDialog" parent="UserInterface"]
+title = "Enter FPS Value"
+initial_position = 1
+
+[node name="FpsInput" type="SpinBox" parent="UserInterface/FpsBox"]
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 192.0
+offset_bottom = 51.0
+min_value = 1.0
+max_value = 144.0
+value = 1.0
+rounded = true
+custom_arrow_step = 1.0
+
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.125524, 0.992091, 0, -0.992091, 0.125524, 0, 3.10271, 0)
 
@@ -349,6 +378,7 @@ mesh = SubResource("SphereMesh_0fwdd")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.5, -0.25, -0.125)
 mesh = SubResource("SphereMesh_0fwdd")
 
+[connection signal="ready" from="Tank" to="UserInterface/SettingsButton" method="_on_tank_ready"]
 [connection signal="pressed" from="UserInterface/FileInput/OpenFile" to="Tank" method="_on_open_file_pressed"]
 [connection signal="pressed" from="UserInterface/FileInput/LoadFile" to="Tank" method="_on_load_file_pressed"]
 [connection signal="canceled" from="UserInterface/FileDialog" to="Tank" method="_on_file_dialog_canceled"]
@@ -361,3 +391,4 @@ mesh = SubResource("SphereMesh_0fwdd")
 [connection signal="pressed" from="UserInterface/Timeline/PauseButton/StepForward" to="Tank" method="_on_step_forward_pressed"]
 [connection signal="pressed" from="UserInterface/Timeline/PauseButton/SkipLast" to="Tank" method="_on_skip_last_pressed"]
 [connection signal="value_changed" from="UserInterface/Timeline/TimelineContainer/Slider" to="Tank" method="_on_slider_value_changed"]
+[connection signal="confirmed" from="UserInterface/FpsBox" to="UserInterface/SettingsButton" method="_on_fps_box_confirmed"]

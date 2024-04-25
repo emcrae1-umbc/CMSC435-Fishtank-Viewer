@@ -186,7 +186,10 @@ func _load_file_threadwork(file) -> Array:
 	# open file
 	var f = FileAccess.open(file, FileAccess.READ)
 	# first line of file is the number of frames
-	var nframes = f.get_line().to_int()
+	var line = f.get_line().strip_edges()
+	while line.length() == 0 or line[0] == '#':
+		line = f.get_line().strip_edges()
+	var nframes = line.to_int()
 	_total_frames = nframes
 	for frame in range(nframes):
 #		print("Frame ", frame, "/", nframes)
@@ -197,13 +200,21 @@ func _load_file_threadwork(file) -> Array:
 			var err_str = "Only able read in " + str(frame) + " of " + str(nframes) + " frames."
 			return [ERR_FILE_EOF, err_str]
 		# get the number of fish for the current frame
-		var num_fish = f.get_line().to_int()
+#		var num_fish = f.get_line().to_int()
+		line = f.get_line().strip_edges()
+		while line.length() == 0 or line[0] == '#':
+			line = f.get_line().strip_edges()
+		var num_fish = line.to_int()
 		if f.eof_reached():
 			# show error message here
 			var err_str = "No more fish after specifying " + str(num_fish) + " for frame " + str(frame)
 			return [ERR_FILE_EOF, err_str]
 		for i in range(num_fish):
-			var fish_string = f.get_line()
+#			var fish_string = f.get_line()
+			line = f.get_line().strip_edges()
+			while line.length() == 0 or line[0] == '#':
+				line = f.get_line().strip_edges()
+			var fish_string = line
 			if f.eof_reached():
 				# show error message here
 				var err_str = "Only able read in " + str(i) + " of " + str(num_fish) + " fish for frame " + str(frame) + "."
@@ -226,9 +237,17 @@ func _load_file_threadwork(file) -> Array:
 			fish_array.push_back(new_fish)
 		if ecode[0] != OK:
 			break
-		var num_food = f.get_line().to_int()
+#		var num_food = f.get_line().to_int()
+		line = f.get_line().strip_edges()
+		while line.length() == 0 or line[0] == '#':
+			line = f.get_line().strip_edges()
+		var num_food = line.to_int()
 		for i in range(num_food):
-			var food_string = f.get_line()
+#			var food_string = f.get_line()
+			line = f.get_line().strip_edges()
+			while line.length() == 0 or line[0] == '#':
+				line = f.get_line().strip_edges()
+			var food_string = line
 			if f.eof_reached():
 				# show error message here
 				var err_str = "Only able read in " + str(i) + " of " + str(num_food) + " food for frame " + str(frame) + "."
