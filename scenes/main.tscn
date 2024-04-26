@@ -9,7 +9,7 @@
 [ext_resource type="Texture2D" uid="uid://c7ewrs6825glw" path="res://textures/stepbackwards.png" id="7_m5pwy"]
 [ext_resource type="Texture2D" uid="uid://0j5wab7p0k5i" path="res://textures/stepforward.png" id="8_73o3w"]
 [ext_resource type="Texture2D" uid="uid://cb3pk30ojk51y" path="res://textures/last.png" id="9_7idb8"]
-[ext_resource type="Script" path="res://scenes/settings.gd" id="10_20pfy"]
+[ext_resource type="Script" path="res://scripts/settings.gd" id="10_b8n2h"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_n8dwy"]
 transparency = 2
@@ -269,7 +269,7 @@ text = "Settings"
 item_count = 1
 popup/item_0/text = "FPS"
 popup/item_0/id = 0
-script = ExtResource("10_20pfy")
+script = ExtResource("10_b8n2h")
 fishtank = NodePath("../../Tank")
 fps_box = NodePath("../FpsBox")
 
