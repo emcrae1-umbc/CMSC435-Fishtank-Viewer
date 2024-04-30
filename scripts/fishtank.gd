@@ -3,6 +3,8 @@ extends MeshInstance3D
 @export var fps: int = 30
 @export var fish: PackedScene
 @export var food: PackedScene
+@export var poop: PackedScene
+@export var poop_enabled: bool = false
 
 # Node references
 var _file_dialog
@@ -17,6 +19,7 @@ var _timeline
 # Frame storage
 var _fish = [[]]
 var _food = [[]]
+var _poop = [[]]
 # Runtime variables
 var _tank_paused = true
 var _has_fish = false
@@ -60,6 +63,8 @@ func _process(delta):
 #		print("Fish: ", _fish[_current_frame].size(), "  Food: ", _food[_current_frame].size())
 		_show_fish(_current_frame)
 		_show_food(_current_frame)
+		if poop_enabled:
+			_show_poop(_current_frame)
 		_update_timeline(_current_frame)
 		if  not _tank_paused:
 			_current_time += delta
@@ -137,6 +142,9 @@ func _show_fish(frame):
 		# Move to position
 		fish_inst.look_at_from_position(f.position, dir)
 		add_child(fish_inst)
+		# Update size
+		var fish_3d = fish_inst as Node3D
+		fish_3d.global_scale(Vector3(1 + 2*f.size, 1 + 2*f.size, 1 + 2*f.size))
 
 
 func _show_food(frame):
@@ -148,6 +156,14 @@ func _show_food(frame):
 		food_inst.set_position(f.position)
 		add_child(food_inst)
 
+func _show_poop(frame):
+	for p in _poop[frame]:
+		# Spawn instance of poop
+		var poop_inst = poop.instantiate()
+		# Move to position
+#		print("Pos: ", f.position.x, ",", f.position.y, ",", f.position.z)
+		poop_inst.set_position(p.position)
+		add_child(poop_inst)
 
 func _reset_tank():
 	_current_time = 0.0
@@ -158,6 +174,7 @@ func _reset_tank():
 	_clean_tank()
 	_fish = [[]]
 	_food = [[]]
+	_poop = [[]]
 	_tank_paused = true
 	_setup_timeline()
 	_update_timeline(_current_frame)
@@ -195,6 +212,7 @@ func _load_file_threadwork(file) -> Array:
 #		print("Frame ", frame, "/", nframes)
 		var fish_array = []
 		var food_array = []
+		var poop_array = []
 		if f.eof_reached():
 			# show error message here
 			var err_str = "Only able read in " + str(frame) + " of " + str(nframes) + " frames."
@@ -227,13 +245,15 @@ func _load_file_threadwork(file) -> Array:
 			fish_str = fish_str.replace(",", " ")
 			var fish_arr = fish_str.split_floats(" ", false)
 			# Do the error checking here, should be 6 floats
-			if fish_arr.size() != 6:
+			if (!poop_enabled and fish_arr.size() != 6) or (poop_enabled and fish_arr.size() != 7):
 				var err_str = "Invalid input: Fish " + str(i) + " in frame " + str(frame) + ": " + fish_string
 				ecode = [ERR_INVALID_DATA, err_str]
 				break
 			var new_fish = Fish.new()
 			new_fish.position = Vector3(fish_arr[0], fish_arr[1], fish_arr[2])
 			new_fish.velocity = Vector3(fish_arr[3], fish_arr[4], fish_arr[5])
+			if poop_enabled:
+				new_fish.size = fish_arr[6]
 			fish_array.push_back(new_fish)
 		if ecode[0] != OK:
 			break
@@ -266,6 +286,36 @@ func _load_file_threadwork(file) -> Array:
 			food_array.push_back(new_food)
 		if ecode[0] != OK:
 			break
+		if poop_enabled:
+			line = f.get_line().strip_edges()
+			while line.length() == 0 or line[0] == '#':
+				line = f.get_line().strip_edges()
+			var num_poop = line.to_int()
+			for i in range(num_poop):
+	#			var food_string = f.get_line()
+				line = f.get_line().strip_edges()
+				while line.length() == 0 or line[0] == '#':
+					line = f.get_line().strip_edges()
+				var poop_string = line
+				if f.eof_reached():
+					# show error message here
+					var err_str = "Only able read in " + str(i) + " of " + str(num_poop) + " poop for frame " + str(frame) + "."
+					ecode = [ERR_FILE_EOF, err_str]
+					break
+				var poop_str = poop_string.replace("[", " ")
+				poop_str = poop_str.replace("]", " ")
+				poop_str = poop_str.replace(",", " ")
+				var poop_arr = poop_str.split_floats(" ", false)
+				if poop_arr.size() != 3:
+					var err_str = "Invalid input: Poop " + str(i) + " in frame " + str(frame) + ": " + poop_string
+					ecode = [ERR_INVALID_DATA, err_str]
+					break
+				var new_poop = Poop.new()
+				new_poop.position = Vector3(poop_arr[0], poop_arr[1], poop_arr[2])
+				poop_array.push_back(new_poop)
+			if ecode[0] != OK:
+				break
+			_poop.push_back(poop_array)
 		_fish.push_back(fish_array)
 		_food.push_back(food_array)
 #		var timer = get_tree().create_timer(0.01)
@@ -360,12 +410,25 @@ class Fish:
 			velocity = new_velocity
 		get:
 			return velocity
+	var size: float = 0:
+		set(new_size):
+			size = new_size
+		get:
+			return size
 	
 	func _to_string():
 		return "Position: " + str(position) + ", Velocity: " + str(velocity)
 
 
 class Food:
+	var position: Vector3 = Vector3.ZERO:
+		set(new_position):
+			position = new_position
+		get:
+			return position
+
+
+class Poop:
 	var position: Vector3 = Vector3.ZERO:
 		set(new_position):
 			position = new_position

@@ -1,9 +1,10 @@
-[gd_scene load_steps=16 format=3 uid="uid://b247mw8rkipt7"]
+[gd_scene load_steps=17 format=3 uid="uid://b247mw8rkipt7"]
 
 [ext_resource type="Script" path="res://scripts/fishtank.gd" id="1_ogwe8"]
 [ext_resource type="PackedScene" uid="uid://csxo846kvd2n1" path="res://scenes/fish.tscn" id="2_h57mf"]
 [ext_resource type="PackedScene" uid="uid://c4ev7hfnf378r" path="res://scenes/food.tscn" id="3_asu47"]
 [ext_resource type="Texture2D" uid="uid://cwqtf4miuexdf" path="res://textures/pausebutton.png" id="4_8nmy4"]
+[ext_resource type="PackedScene" uid="uid://bdqm3m4fweiwf" path="res://scenes/poop.tscn" id="4_dsext"]
 [ext_resource type="Texture2D" uid="uid://dsmmq4yixuvvp" path="res://textures/playbutton.png" id="5_dn68d"]
 [ext_resource type="Texture2D" uid="uid://cyv4cb2kjbog0" path="res://textures/first.png" id="6_j54lq"]
 [ext_resource type="Texture2D" uid="uid://c7ewrs6825glw" path="res://textures/stepbackwards.png" id="7_m5pwy"]
@@ -43,6 +44,7 @@ mesh = SubResource("BoxMesh_2ww4b")
 script = ExtResource("1_ogwe8")
 fish = ExtResource("2_h57mf")
 food = ExtResource("3_asu47")
+poop = ExtResource("4_dsext")
 
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0.89)
@@ -260,18 +262,22 @@ text = "10.0 Sec
 layout_mode = 2
 text = "   "
 
-[node name="SettingsButton" type="MenuButton" parent="UserInterface" node_paths=PackedStringArray("fishtank", "fps_box")]
+[node name="SettingsButton" type="MenuButton" parent="UserInterface" node_paths=PackedStringArray("fishtank", "fps_box", "poop_box", "poop_toggle")]
 layout_mode = 0
 offset_right = 57.0
 offset_bottom = 23.0
 action_mode = 1
 text = "Settings"
-item_count = 1
+item_count = 2
 popup/item_0/text = "FPS"
 popup/item_0/id = 0
+popup/item_1/text = "Poop"
+popup/item_1/id = 1
 script = ExtResource("10_b8n2h")
 fishtank = NodePath("../../Tank")
 fps_box = NodePath("../FpsBox")
+poop_box = NodePath("../PoopBox")
+poop_toggle = NodePath("../PoopBox/PoopToggle")
 
 [node name="FpsBox" type="ConfirmationDialog" parent="UserInterface"]
 title = "Enter FPS Value"
@@ -287,6 +293,15 @@ max_value = 144.0
 value = 1.0
 rounded = true
 custom_arrow_step = 1.0
+
+[node name="PoopBox" type="ConfirmationDialog" parent="UserInterface"]
+title = "Poop"
+initial_position = 1
+
+[node name="PoopToggle" type="CheckButton" parent="UserInterface/PoopBox"]
+offset_right = 44.0
+offset_bottom = 24.0
+text = "Poop Enabled"
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.125524, 0.992091, 0, -0.992091, 0.125524, 0, 3.10271, 0)
@@ -392,3 +407,5 @@ mesh = SubResource("SphereMesh_0fwdd")
 [connection signal="pressed" from="UserInterface/Timeline/PauseButton/SkipLast" to="Tank" method="_on_skip_last_pressed"]
 [connection signal="value_changed" from="UserInterface/Timeline/TimelineContainer/Slider" to="Tank" method="_on_slider_value_changed"]
 [connection signal="confirmed" from="UserInterface/FpsBox" to="UserInterface/SettingsButton" method="_on_fps_box_confirmed"]
+[connection signal="confirmed" from="UserInterface/PoopBox" to="UserInterface/SettingsButton" method="_on_poop_box_confirmed"]
+[connection signal="toggled" from="UserInterface/PoopBox/PoopToggle" to="UserInterface/SettingsButton" method="_on_poop_toggle_toggled"]

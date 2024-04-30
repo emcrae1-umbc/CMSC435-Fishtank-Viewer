@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3 uid="uid://bdqm3m4fweiwf"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_4bkaq"]
+albedo_color = Color(0.52549, 0.388235, 0.258824, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_jipld"]
+material = SubResource("StandardMaterial3D_4bkaq")
+size = Vector3(0.75, 0.75, 0.75)
+
+[node name="Poop" type="Node3D"]
+
+[node name="PoopMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.01, 0, 0, 0, 0.01, 0, 0, 0, 0.01, 0, 0, 0)
+mesh = SubResource("BoxMesh_jipld")
